@@ -1,0 +1,1 @@
+if [ $LOCAL_PHP_MEMCACHED = true ]; then cp -n /var/www/tests/phpunit/includes/object-cache.php /var/www/src/wp-content/object-cache.php; else rm -f /var/www/src/wp-content/object-cache.php; fi && exec php-fpm

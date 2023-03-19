@@ -1,0 +1,47 @@
+version: "3"
+
+x-uffizzi:
+  ingress:
+    service: wordpress
+    port: 80
+
+
+services:
+
+  wordpress:
+    image: "${NGINX_IMAGE}"
+    environment:
+      LOCAL_DIR: ${LOCAL_DIR-src}
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "/var/www/uffizzi/wordpress.sh"]
+
+  php:
+    image: "${APP_IMAGE}"
+    environment:
+      - LOCAL_PHP_XDEBUG=${LOCAL_PHP_XDEBUG-false}
+      - XDEBUG_MODE=${LOCAL_PHP_XDEBUG_MODE-develop,debug}
+      - LOCAL_PHP_MEMCACHED=${LOCAL_PHP_MEMCACHED-false}
+      - PHP_FPM_UID=${PHP_FPM_UID-1000}
+      - PHP_FPM_GID=${PHP_FPM_GID-1000}
+      - GITHUB_REF=${GITHUB_REF-false}
+      - GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME-false}
+    entrypoint: ["/bin/sh"]      
+    command: ["-c", "/var/www/uffizzi/php.sh"]
+
+  mysql:
+    image: amd64/mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: wordpress_develop
+    command: --default-authentication-plugin=mysql_native_password
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+
+  memcached:
+    image: memcached
+    ports:
+      - 11211:11211
